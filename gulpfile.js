@@ -5,9 +5,9 @@ var gulp = require('gulp'),
     browserify = require('browserify'),
     imagemin = require('gulp-imagemin'),
     browserSync = require('browser-sync'),
-    source = require('vinyl-source-stream'),
+    source = require('vinyl-source-stream')/*,
     streamify = require('gulp-streamify'),
-    uglify = require('gulp-uglify');
+    uglify = require('gulp-uglify')*/;
 
 gulp.task('default', ['compile', 'watch', 'server']);
 
@@ -39,12 +39,12 @@ gulp.task('markup', function () {
 });
 
 gulp.task('assets', function () {
-  return gulp.src(['src/assets/*.png', 'src/assets/*jpg'])
+  return gulp.src(['src/assets/*.png', 'src/assets/*jpg', 'src/assets/*.json'])
     .pipe(imagemin())
     .pipe(gulp.dest('bin/assets'));
 });
 
-gulp.task('watch', ['watch-scripts', 'watch-markup']);
+gulp.task('watch', ['watch-scripts', 'watch-markup', 'watch-assets']);
 
 gulp.task('watch-scripts', function () {
   return gulp.watch('src/js/**/*.js', function () {
@@ -55,6 +55,12 @@ gulp.task('watch-scripts', function () {
 gulp.task('watch-markup', function () {
   return gulp.watch('src/index.html', function () {
     gulp.run('markup');
+  });
+});
+
+gulp.task('watch-assets', function () {
+  return gulp.watch('src/assets/*', function () {
+    gulp.run('assets');
   });
 });
 

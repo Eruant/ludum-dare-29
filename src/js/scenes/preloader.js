@@ -1,6 +1,7 @@
 /*globals module, require*/
 
-var Phaser = require('phaser');
+var Phaser = require('phaser'),
+  game = require('../game');
 
 module.exports = {
 
@@ -11,8 +12,12 @@ module.exports = {
     this.loadingBar.anchor.y = 0.5;
     this.load.setPreloadSprite(this.loadingBar);
 
-    this.game.load.image('menu_background', 'assets/menu_background.png');
-    this.game.load.spritesheet('game_sprites', 'assets/game_sprites.png', 32, 32);
+    game.load.image('background', 'assets/menu_background.png');
+
+    game.load.spritesheet('ground_tiles', 'assets/ground_sprite.png', 64, 64);
+    game.load.tilemap('ground_map', 'assets/ground_tiles.json', null, Phaser.Tilemap.TILED_JSON);
+
+    game.load.spritesheet('player', 'assets/player_sprite.png', 64, 64);
 
   },
 
@@ -23,7 +28,7 @@ module.exports = {
   },
 
   startMainMenu: function () {
-    this.game.state.start('mainMenu', true, false);
+    game.state.start('mainMenu', true, false);
   }
 
 };

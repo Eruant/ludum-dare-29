@@ -1,6 +1,6 @@
 /**
  * @class base
- * This is the root file for the Phaser Boilerplate. All other files are included from this one.
+ * Base class to add all other scenes
  *
  * @author Matt Gale <matt@littleball.co.uk>
  **/

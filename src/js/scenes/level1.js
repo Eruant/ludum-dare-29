@@ -1,8 +1,10 @@
-/* globals module, require, localStorage*/
+/* globals module, require*/
 
 var Phaser = require('phaser'),
-  game = require('../game');
-
+  game = require('../game'),
+  Player = require('../classes/Player'),
+  Ground = require('../classes/Ground'),
+  Input = require('../classes/Input');
 
 module.exports = {
 
@@ -10,73 +12,47 @@ module.exports = {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    this.background = this.add.sprite(0, 0, 'menu_background');
+    this.background = this.add.tileSprite(0, 0, game.width, game.height, 'background');
+    this.background.fixedToCamera = true;
 
-    this.player = this.add.sprite(50, 50, 'game_sprites');
+    this.ground = new Ground();
+    this.player = new Player(10, 10);
+    this.input = new Input();
 
-    game.physics.enable(this.player, Phaser.Physics.ARCADE);
-    this.player.body.gravity.y = 1000;
-
-    this.blocks = game.add.group();
-    this.blocks.enableBody = true;
-    this.blocks.physicsBodyType = Phaser.Physics.ARCADE;
-
-    this.blocks.createMultiple(10, 'game_sprites', 1);
-
-
-    this.input.onDown.add(this.jump, this);
-
-    this.blockTimer = game.time.events.loop(500, this.addBlock, this);
-    this.scoreTimer = game.time.events.loop(Phaser.Timer.SECOND, this.addScore, this);
-
-    this.score = 0;
-    var style = {
-      font: '30px Arial',
-      fill: '#fff'
-    };
-    this.labelScore = game.add.text(20, 20, "0", style);
+    game.camera.follow(this.player.sprite);
   },
 
   update: function () {
+
     if (this.player.inWorld === false) {
       this.restartGame();
     }
-    game.physics.arcade.overlap(this.player, this.blocks, this.restartGame, null, this);
+    game.physics.arcade.collide(this.player.sprite, this.ground.layer);
+    
+    if (this.input.left()) {
+      this.player.walkLeft();
+    } else if (this.input.right()) {
+      this.player.walkRight();
+    } else {
+      this.player.walkStop();
+    }
 
-    this.labelScore.setText("" + this.score);
-  },
+    if (this.player.isOnGround()) {
+      this.player.canVariableJump = true;
+    }
 
-  jump: function () {
-    this.player.body.velocity.y = -350;
-  },
+    if (this.input.justPressedUp()) {
+      if (this.player.isOnGround() || this.player.canVariableJump) {
+        this.player.jump();
+      }
+    }
 
-  addBlock: function () {
-    var x = 480,
-      y = ((Math.floor(Math.random() * 5) + 1) * 60) - 30;
-
-    var block = this.blocks.getFirstDead();
-    block.reset(x, y);
-    block.body.velocity.x = -200;
-    block.checkWorldBounds = true;
-    block.outOfBoundsKill = true;
-  },
-
-  addScore: function () {
-    this.score += 1;
-    this.labelScore.content = this.score;
+    if (!this.input.up()) {
+      this.player.canVariableJump = false;
+    }
   },
 
   restartGame: function () {
-
-    var previousHighscore = localStorage.getItem("highscore");
-    if (!previousHighscore || previousHighscore < this.score) {
-      localStorage.setItem("highscore", this.score);
-    }
-
-    localStorage.setItem("lastscore", this.score);
-
-    game.time.events.remove(this.blockTimer);
-    game.time.events.remove(this.scoreTimer);
     game.state.start('mainMenu');
   }
 

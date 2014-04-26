@@ -1,7 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
  * @class base
- * This is the root file for the Phaser Boilerplate. All other files are included from this one.
+ * Base class to add all other scenes
  *
  * @author Matt Gale <matt@littleball.co.uk>
  **/
@@ -22,14 +22,123 @@ game.state.add('level1', level1, false);
 
 game.state.start('boot');
 
-},{"./game":2,"./scenes/boot.js":3,"./scenes/level1":4,"./scenes/mainMenu":5,"./scenes/preloader":6}],2:[function(require,module,exports){
-var Phaser = (window.Phaser);
+},{"./game":5,"./scenes/boot.js":6,"./scenes/level1":7,"./scenes/mainMenu":8,"./scenes/preloader":9}],2:[function(require,module,exports){
+var /*Phaser = require('phaser'),*/
+  game = require('../game'),
+  Ground = function () {
+    this.setup();
+    this.addBlocks();
 
-var game = new Phaser.Game(480, 320, Phaser.AUTO, 'content', null);
+    return this;
+  };
+
+Ground.prototype.setup = function () {
+  this.tilemap = game.add.tilemap('ground_map');
+  this.tilemap.addTilesetImage('ground', 'ground_tiles');
+
+  this.tilemap.setCollisionBetween(1, 15);
+};
+
+Ground.prototype.addBlocks = function () {
+  this.layer = this.tilemap.createLayer(0);
+  this.layer.resizeWorld();
+};
+
+module.exports = Ground;
+
+},{"../game":5}],3:[function(require,module,exports){
+/*globals module, require*/
+
+var Phaser = (window.Phaser),
+  game = require('../game');
+
+var Input = function () {
+  game.input.keyboard.addKeyCapture([
+    Phaser.Keyboard.LEFT,
+    Phaser.Keyboard.RIGHT,
+    Phaser.Keyboard.UP,
+    Phaser.Keyboard.W,
+    Phaser.Keyboard.A,
+    Phaser.Keyboard.D
+  ]);
+
+};
+
+Input.prototype.left = function () {
+  return !!(game.input.keyboard.isDown(Phaser.Keyboard.LEFT) || game.input.keyboard.isDown(Phaser.Keyboard.A));
+};
+
+Input.prototype.right = function () {
+  return !!(game.input.keyboard.isDown(Phaser.Keyboard.RIGHT) || game.input.keyboard.isDown(Phaser.Keyboard.D));
+};
+
+Input.prototype.up = function () {
+  return !!(game.input.keyboard.isDown(Phaser.Keyboard.UP) || game.input.keyboard.isDown(Phaser.Keyboard.W));
+};
+
+Input.prototype.justPressedUp = function () {
+  return !!(game.input.keyboard.justPressed(Phaser.Keyboard.UP, 400) || game.input.keyboard.justPressed(Phaser.Keyboard.W, 400));
+};
+
+module.exports = Input;
+
+},{"../game":5}],4:[function(require,module,exports){
+var Phaser = (window.Phaser),
+  game = require('../game'),
+  Player = function (x, y) {
+
+    this.MAX_SPEED = 250;
+    this.ACCELERATION = 600;
+    this.DRAG = 400;
+    this.GRAVITY = 600;
+    this.JUMP_SPEED = -600;
+
+    this.canVariableJump = false;
+
+    this.sprite = game.add.sprite(x, y, 'player');
+    game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
+
+    this.sprite.body.collideWorldBounds = true;
+    this.sprite.body.gravity.y = this.GRAVITY;
+    this.sprite.body.maxVelocity.setTo(this.MAX_SPEED, this.MAX_SPEED);
+    this.sprite.body.drag.setTo(this.DRAG, 0);
+
+    this.sprite.anchor.setTo(0, 0);
+
+    return this;
+  };
+
+Player.prototype.walkLeft = function () {
+  this.sprite.body.acceleration.x = -this.ACCELERATION;
+};
+
+Player.prototype.walkRight = function () {
+  this.sprite.body.acceleration.x = this.ACCELERATION;
+};
+
+Player.prototype.walkStop = function () {
+  this.sprite.body.acceleration.x = 0;
+};
+
+Player.prototype.isOnGround = function () {
+  return this.sprite.body.onFloor();
+};
+
+Player.prototype.jump = function () {
+  this.sprite.body.velocity.y = this.JUMP_SPEED;
+};
+
+module.exports = Player;
+
+},{"../game":5}],5:[function(require,module,exports){
+var Phaser = (window.Phaser),
+  scale = 1.5;
+
+var game = new Phaser.Game(480 * scale, 300 * scale, Phaser.AUTO, 'content', null);
 
 module.exports = game;
 
-},{}],3:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*globals module*/
 
 var game = require('../game');
@@ -60,12 +169,14 @@ module.exports = {
 
 };
 
-},{"../game":2}],4:[function(require,module,exports){
-/* globals module, require, localStorage*/
+},{"../game":5}],7:[function(require,module,exports){
+/* globals module, require*/
 
 var Phaser = (window.Phaser),
-  game = require('../game');
-
+  game = require('../game'),
+  Player = require('../classes/Player'),
+  Ground = require('../classes/Ground'),
+  Input = require('../classes/Input');
 
 module.exports = {
 
@@ -73,80 +184,54 @@ module.exports = {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    this.background = this.add.sprite(0, 0, 'menu_background');
+    this.background = this.add.tileSprite(0, 0, game.width, game.height, 'background');
+    this.background.fixedToCamera = true;
 
-    this.player = this.add.sprite(50, 50, 'game_sprites');
+    this.ground = new Ground();
+    this.player = new Player(10, 10);
+    this.input = new Input();
 
-    game.physics.enable(this.player, Phaser.Physics.ARCADE);
-    this.player.body.gravity.y = 1000;
-
-    this.blocks = game.add.group();
-    this.blocks.enableBody = true;
-    this.blocks.physicsBodyType = Phaser.Physics.ARCADE;
-
-    this.blocks.createMultiple(10, 'game_sprites', 1);
-
-
-    this.input.onDown.add(this.jump, this);
-
-    this.blockTimer = game.time.events.loop(500, this.addBlock, this);
-    this.scoreTimer = game.time.events.loop(Phaser.Timer.SECOND, this.addScore, this);
-
-    this.score = 0;
-    var style = {
-      font: '30px Arial',
-      fill: '#fff'
-    };
-    this.labelScore = game.add.text(20, 20, "0", style);
+    game.camera.follow(this.player.sprite);
   },
 
   update: function () {
+
     if (this.player.inWorld === false) {
       this.restartGame();
     }
-    game.physics.arcade.overlap(this.player, this.blocks, this.restartGame, null, this);
+    game.physics.arcade.collide(this.player.sprite, this.ground.layer);
+    
+    if (this.input.left()) {
+      this.player.walkLeft();
+    } else if (this.input.right()) {
+      this.player.walkRight();
+    } else {
+      this.player.walkStop();
+    }
 
-    this.labelScore.setText("" + this.score);
-  },
+    if (this.player.isOnGround()) {
+      this.player.canVariableJump = true;
+    }
 
-  jump: function () {
-    this.player.body.velocity.y = -350;
-  },
+    if (this.input.justPressedUp()) {
+      if (this.player.isOnGround() || this.player.canVariableJump) {
+        this.player.jump();
+      }
+    }
 
-  addBlock: function () {
-    var x = 480,
-      y = ((Math.floor(Math.random() * 5) + 1) * 60) - 30;
-
-    var block = this.blocks.getFirstDead();
-    block.reset(x, y);
-    block.body.velocity.x = -200;
-    block.checkWorldBounds = true;
-    block.outOfBoundsKill = true;
-  },
-
-  addScore: function () {
-    this.score += 1;
-    this.labelScore.content = this.score;
+    if (!this.input.up()) {
+      this.player.canVariableJump = false;
+    }
   },
 
   restartGame: function () {
-
-    var previousHighscore = localStorage.getItem("highscore");
-    if (!previousHighscore || previousHighscore < this.score) {
-      localStorage.setItem("highscore", this.score);
-    }
-
-    localStorage.setItem("lastscore", this.score);
-
-    game.time.events.remove(this.blockTimer);
-    game.time.events.remove(this.scoreTimer);
     game.state.start('mainMenu');
   }
 
 };
 
-},{"../game":2}],5:[function(require,module,exports){
-/*globals module, require, localStorage*/
+},{"../classes/Ground":2,"../classes/Input":3,"../classes/Player":4,"../game":5}],8:[function(require,module,exports){
+/*globals module, require*/
 
 var Phaser = (window.Phaser),
   game = require('../game');
@@ -155,41 +240,19 @@ module.exports = {
 
   create: function () {
 
-    var tween,
-      highscore = localStorage.getItem("highscore"),
-      lastscore = localStorage.getItem("lastscore"),
-      style = {
-        font: '30px Arial',
-        fill: '#fff'
-      };
+    var tween;
 
-    if (highscore) {
-      this.highscore = highscore;
-    } else {
-      this.highscore = 0;
-    }
-
-    this.background = this.add.sprite(0, 0, 'menu_background');
+    this.background = this.add.tileSprite(0, 0, game.width, game.height, 'background');
     this.background.alpha = 0;
 
-    this.labelTitle = game.add.text(20, 20, "Tap to start", style);
-    this.labelTitle.alpha = 0;
-
-    this.highscoreLabel = game.add.text(20, 280, "High Score: " + this.highscore, style);
-
-    if (lastscore) {
-      this.lastscoreLabel = game.add.text(20, 240, "Last Score: " + lastscore, style);
-    }
-
     tween = this.add.tween(this.background)
-      .to({ alpha: 1 }, 500, Phaser.Easing.Linear.None, true);
-    this.add.tween(this.labelTitle)
       .to({ alpha: 1 }, 500, Phaser.Easing.Linear.None, true);
 
     tween.onComplete.add(this.addPointerEvents, this);
   },
 
   addPointerEvents: function () {
+    this.startGame();
     this.input.onDown.addOnce(this.startGame, this);
   },
 
@@ -199,10 +262,11 @@ module.exports = {
 
 };
 
-},{"../game":2}],6:[function(require,module,exports){
+},{"../game":5}],9:[function(require,module,exports){
 /*globals module, require*/
 
-var Phaser = (window.Phaser);
+var Phaser = (window.Phaser),
+  game = require('../game');
 
 module.exports = {
 
@@ -213,8 +277,12 @@ module.exports = {
     this.loadingBar.anchor.y = 0.5;
     this.load.setPreloadSprite(this.loadingBar);
 
-    this.game.load.image('menu_background', 'assets/menu_background.png');
-    this.game.load.spritesheet('game_sprites', 'assets/game_sprites.png', 32, 32);
+    game.load.image('background', 'assets/menu_background.png');
+
+    game.load.spritesheet('ground_tiles', 'assets/ground_sprite.png', 64, 64);
+    game.load.tilemap('ground_map', 'assets/ground_tiles.json', null, Phaser.Tilemap.TILED_JSON);
+
+    game.load.spritesheet('player', 'assets/player_sprite.png', 64, 64);
 
   },
 
@@ -225,9 +293,9 @@ module.exports = {
   },
 
   startMainMenu: function () {
-    this.game.state.start('mainMenu', true, false);
+    game.state.start('mainMenu', true, false);
   }
 
 };
 
-},{}]},{},[1])
+},{"../game":5}]},{},[1])
