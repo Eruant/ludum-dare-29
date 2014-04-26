@@ -1,3 +1,3 @@
-# Phaser Boilerplate
+# Ludum Dare 29: Theme is Beneath the surface
 
-A starting point for a game with Phaser, with sample game (flappy birds clone).
+See this game progress in 48 hours
