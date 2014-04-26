@@ -18,20 +18,32 @@ var Phaser = require('phaser'),
     this.sprite.body.maxVelocity.setTo(this.MAX_SPEED, this.MAX_SPEED);
     this.sprite.body.drag.setTo(this.DRAG, 0);
 
-    this.sprite.anchor.setTo(0, 0);
+    this.sprite.anchor.setTo(0.5, -0.2);
+    this.sprite.body.offset.setTo(32, 0);
+
+    this.sprite.animations.add('stand', [0, 1], 2.5, true);
+    this.sprite.animations.add('walk', [2, 3, 4, 5], 10, true);
+    this.sprite.animations.add('jump', [6, 7], 5, true);
 
     return this;
   };
 
 Player.prototype.walkLeft = function () {
+  this.sprite.animations.play('walk');
+  this.sprite.scale.setTo(-1, 1);
   this.sprite.body.acceleration.x = -this.ACCELERATION;
 };
 
 Player.prototype.walkRight = function () {
+  this.sprite.animations.play('walk');
+  this.sprite.scale.setTo(1, 1);
   this.sprite.body.acceleration.x = this.ACCELERATION;
 };
 
 Player.prototype.walkStop = function () {
+  if (this.isOnGround()) {
+    this.sprite.animations.play('stand');
+  }
   this.sprite.body.acceleration.x = 0;
 };
 
@@ -40,7 +52,12 @@ Player.prototype.isOnGround = function () {
 };
 
 Player.prototype.jump = function () {
+  this.sprite.animations.play('jump');
   this.sprite.body.velocity.y = this.JUMP_SPEED;
+};
+
+Player.prototype.midAir = function () {
+  this.sprite.animations.play('stand');
 };
 
 module.exports = Player;

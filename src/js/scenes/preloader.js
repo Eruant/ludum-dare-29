@@ -13,6 +13,7 @@ module.exports = {
     this.load.setPreloadSprite(this.loadingBar);
 
     game.load.image('background', 'assets/menu_background.png');
+    game.load.image('bubbles', 'assets/bubbles.png');
 
     game.load.spritesheet('ground_tiles', 'assets/ground_sprite.png', 64, 64);
     game.load.tilemap('ground_map', 'assets/ground_tiles.json', null, Phaser.Tilemap.TILED_JSON);
