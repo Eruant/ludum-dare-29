@@ -276,6 +276,9 @@ module.exports = {
 
     this.TILE_SIZE = 64;
 
+    var playerX = 8 * this.TILE_SIZE,
+      playerY = 8 * this.TILE_SIZE;
+
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     this.background = this.add.tileSprite(0, 0, game.width, game.height, 'background');
@@ -286,7 +289,7 @@ module.exports = {
     this.ground = new Ground();
     this.collectables = new Collectables();
     this.decorations = new Decorations();
-    this.player = new Player(8 * this.TILE_SIZE, 8 * this.TILE_SIZE);
+    this.player = new Player(playerX, playerY);
     this.input = new Input();
     this.logic = new Logic();
 
