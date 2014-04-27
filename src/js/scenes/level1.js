@@ -19,9 +19,6 @@ module.exports = {
     var playerX = 8 * this.TILE_SIZE,
       playerY = 8 * this.TILE_SIZE;
 
-    playerX = 39 * this.TILE_SIZE;
-    playerY = 23 * this.TILE_SIZE;
-
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     this.background = this.add.tileSprite(0, 0, game.width, game.height, 'background');
@@ -79,6 +76,10 @@ module.exports = {
 
     if (!this.input.up()) {
       this.player.canVariableJump = false;
+    }
+
+    if (this.input.mute()) {
+      this.audio.toggleMute();
     }
 
     this.logic.update(xTile, yTile);

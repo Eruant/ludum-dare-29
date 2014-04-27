@@ -26,6 +26,10 @@ module.exports = {
       'assets/sfx.m4a',
       'assets/sfx.ogg'
     ]);
+    game.load.audio('music', [
+      'assets/piano.mp3',
+      'assets/piano.ogg'
+    ]);
 
   },
 

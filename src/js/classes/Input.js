@@ -10,9 +10,14 @@ var Input = function () {
     Phaser.Keyboard.UP,
     Phaser.Keyboard.W,
     Phaser.Keyboard.A,
-    Phaser.Keyboard.D
+    Phaser.Keyboard.D,
+    Phaser.Keyboard.M
   ]);
 
+};
+
+Input.prototype.mute = function () {
+  return !!(game.input.keyboard.justPressed(Phaser.Keyboard.M, 1));
 };
 
 Input.prototype.left = function () {

@@ -25,6 +25,8 @@ game.state.add('win', win, false);
 game.state.start('boot');
 
 },{"./game":9,"./scenes/boot.js":10,"./scenes/level1":11,"./scenes/mainMenu":12,"./scenes/preloader":13,"./scenes/win":14}],2:[function(require,module,exports){
+/*globals localStorage*/
+
 var game = require('../game'),
   Audio = function () {
 
@@ -32,7 +34,36 @@ var game = require('../game'),
     this.sfx.addMarker('pickUpKey', 0, 1);
     this.sfx.addMarker('unlockGate', 1, 8);
     this.sfx.addMarker('endGame', 9, 14);
+
+    this.music = game.add.audio('music');
+    this.music.loop = true;
+    this.music.play();
+
+    this.muteSounds = false;
+    var mute = localStorage.getItem("mute");
+
+    if (mute) {
+      if (mute === 'on') {
+        this.muteSounds = true;
+        this.setMute();
+      }
+    } else {
+      localStorage.setItem("mute", 'off');
+      this.muteSounds = false;
+    }
+
   };
+
+Audio.prototype.setMute = function () {
+  this.sfx.mute = this.muteSounds;
+  this.music.mute = this.muteSounds;
+};
+
+Audio.prototype.toggleMute = function () {
+  this.muteSounds = !this.muteSounds;
+  localStorage.setItem("mute", (this.muteSounds ? 'on' : 'off'));
+  this.setMute();
+};
 
 module.exports = Audio;
 
@@ -105,9 +136,14 @@ var Input = function () {
     Phaser.Keyboard.UP,
     Phaser.Keyboard.W,
     Phaser.Keyboard.A,
-    Phaser.Keyboard.D
+    Phaser.Keyboard.D,
+    Phaser.Keyboard.M
   ]);
 
+};
+
+Input.prototype.mute = function () {
+  return !!(game.input.keyboard.justPressed(Phaser.Keyboard.M, 1));
 };
 
 Input.prototype.left = function () {
@@ -135,14 +171,29 @@ var game = require('../game'),
   this.currentLevel = 0;
 
   this.keys = [
-    { x: 14, y:  4, collected: false, opens: 0 },
-    { x: 25, y:  8, collected: false, opens: 1 },
-    { x: 22, y:  2, collected: false, opens: 1 },
-    { x: 39, y:  2, collected: false, opens: 2 },
-    { x: 31, y: 20, collected: false, opens: 3 },
-    { x: 33, y:  7, collected: false, opens: 4 },
-    { x: 42, y: 20, collected: false, opens: 5 },
-    { x: 33, y:  0, collected: false, opens: 6 }
+    { x: 14, y:  4, collected: false, opens: 0, sound: true },
+    { x: 25, y:  8, collected: false, opens: 1, sound: true },
+    { x: 22, y:  2, collected: false, opens: 1, sound: true },
+    { x: 39, y:  2, collected: false, opens: 2, sound: true },
+    { x: 31, y: 20, collected: false, opens: 3, sound: true },
+    { x: 33, y:  7, collected: false, opens: 4, sound: true },
+    { x: 42, y: 20, collected: false, opens: 5, sound: true },
+    { x: 33, y:  0, collected: false, opens: 6, sound: true },
+    { x: 52, y: 15, collected: false, opens: 7, sound: true },
+    { x: 62, y: 19, collected: false, opens: 7, sound: true },
+    { x: 72, y: 15, collected: false, opens: 7, sound: true },
+    { x: 80, y: 19, collected: false, opens: 7, sound: true },
+    { x: 98, y: 38, collected: false, opens: 8, sound: true },
+    { x: 88, y: 33, collected: false, opens: 8, sound: true },
+    { x: 90, y: 48, collected: false, opens: 9, sound: true },
+    { x: 90, y: 48, collected: false, opens: 10, sound: false },
+    { x: 90, y: 48, collected: false, opens: 11, sound: false },
+    { x: 90, y: 48, collected: false, opens: 12, sound: false },
+    { x: 88, y: 63, collected: false, opens: 13, sound: true },
+    { x: 98, y: 58, collected: false, opens: 14, sound: true },
+    { x: 90, y: 82, collected: false, opens: 14, sound: true },
+    { x: 83, y: 82, collected: false, opens: 15, sound: true },
+    { x: 80, y: 88, collected: false, opens: 15, sound: true }
   ];
   
   this.gates = [
@@ -152,7 +203,16 @@ var game = require('../game'),
     { x: 37, y:  7, open: 1 },  // 3
     { x: 33, y: 18, open: 1 },  // 4
     { x: 37, y:  4, open: 1 },  // 5
-    { x: 37, y: 23, open: 1 }
+    { x: 37, y: 23, open: 1 },  // 6
+    { x: 87, y: 10, open: 4 },  // 7
+    { x: 95, y: 40, open: 2 },  // 8
+    { x: 86, y: 50, open: 1 },  // 9
+    { x: 88, y: 50, open: 1 },  // 10
+    { x: 92, y: 50, open: 1 },  // 11
+    { x: 94, y: 50, open: 1 },  // 12
+    { x: 87, y: 65, open: 1 },  // 13
+    { x: 84, y: 98, open: 1 },  // 14
+    { x: 75, y: 85, open: 2 }  // 15
   ];
 };
 
@@ -171,10 +231,14 @@ Logic.prototype.update = function (x, y) {
         gate.open -= 1;
         key.collected = true;
         game.level.collectables.tilemap.removeTile(x, y, 1);
-        game.level.audio.sfx.play('pickUpKey');
+        if (key.sound) {
+          game.level.audio.sfx.play('pickUpKey');
+        }
         if (gate.open === 0) {
           game.level.ground.tilemap.removeTile(gate.x, gate.y, 0);
-          game.level.audio.sfx.play('unlockGate');
+          if (key.sound) {
+            game.level.audio.sfx.play('unlockGate');
+          }
         }
       }
     }
@@ -311,9 +375,6 @@ module.exports = {
     var playerX = 8 * this.TILE_SIZE,
       playerY = 8 * this.TILE_SIZE;
 
-    playerX = 39 * this.TILE_SIZE;
-    playerY = 23 * this.TILE_SIZE;
-
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     this.background = this.add.tileSprite(0, 0, game.width, game.height, 'background');
@@ -373,6 +434,10 @@ module.exports = {
       this.player.canVariableJump = false;
     }
 
+    if (this.input.mute()) {
+      this.audio.toggleMute();
+    }
+
     this.logic.update(xTile, yTile);
   },
 
@@ -398,7 +463,12 @@ module.exports = {
 
     var tween,
       style = {
-        font: '30px ss',
+        font: '20px ss',
+        fill: '#fff',
+        align: 'center'
+      },
+      largeStyle = {
+        font: '40px ss',
         fill: '#fff',
         align: 'center'
       };
@@ -406,8 +476,11 @@ module.exports = {
     this.background = this.add.tileSprite(0, 0, game.width, game.height, 'background');
     this.background.alpha = 0;
 
-    this.welcomeMsg = game.add.text(game.width / 2, game.height / 2, "Search out the treasure\n\nPress Enter\nto begin", style);
+    this.welcomeMsg = game.add.text(game.width / 2, game.height / 2, "Search out the treasure\n\n\n\n\n\nPress 'M' to mute sounds", style);
     this.welcomeMsg.anchor.set(0.5, 0.5);
+
+    this.instructionMsg = game.add.text(game.width / 2, game.height / 2, "Press Enter to begin", largeStyle);
+    this.instructionMsg.anchor.set(0.5, 0.5);
 
     tween = this.add.tween(this.background)
       .to({ alpha: 1 }, 500, Phaser.Easing.Linear.None, true);
@@ -461,6 +534,10 @@ module.exports = {
     game.load.audio('sfx', [
       'assets/sfx.m4a',
       'assets/sfx.ogg'
+    ]);
+    game.load.audio('music', [
+      'assets/piano.mp3',
+      'assets/piano.ogg'
     ]);
 
   },

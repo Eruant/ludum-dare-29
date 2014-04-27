@@ -9,7 +9,12 @@ module.exports = {
 
     var tween,
       style = {
-        font: '30px ss',
+        font: '20px ss',
+        fill: '#fff',
+        align: 'center'
+      },
+      largeStyle = {
+        font: '40px ss',
         fill: '#fff',
         align: 'center'
       };
@@ -17,8 +22,11 @@ module.exports = {
     this.background = this.add.tileSprite(0, 0, game.width, game.height, 'background');
     this.background.alpha = 0;
 
-    this.welcomeMsg = game.add.text(game.width / 2, game.height / 2, "Search out the treasure\n\nPress Enter\nto begin", style);
+    this.welcomeMsg = game.add.text(game.width / 2, game.height / 2, "Search out the treasure\n\n\n\n\n\nPress 'M' to mute sounds", style);
     this.welcomeMsg.anchor.set(0.5, 0.5);
+
+    this.instructionMsg = game.add.text(game.width / 2, game.height / 2, "Press Enter to begin", largeStyle);
+    this.instructionMsg.anchor.set(0.5, 0.5);
 
     tween = this.add.tween(this.background)
       .to({ alpha: 1 }, 500, Phaser.Easing.Linear.None, true);
