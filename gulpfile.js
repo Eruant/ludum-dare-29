@@ -38,15 +38,19 @@ gulp.task('markup', function () {
     .pipe(gulp.dest('bin'));
 });
 
-gulp.task('assets', function () {
+gulp.task('assets', ['assets-img', 'assets-other']);
+
+gulp.task('assets-img', function () {
   return gulp.src([
     'src/assets/*.png',
-    'src/assets/*jpg',
-    'src/assets/*.json',
-    'src/assets/*.m4a',
-    'src/assets/*.ogg'
+    'src/assets/*jpg'
   ])
     .pipe(imagemin())
+    .pipe(gulp.dest('bin/assets'));
+});
+
+gulp.task('assets-other', function () {
+  return gulp.src(['src/assets/*', '!src/assets/*.png', '!src/assets/*.jpg'])
     .pipe(gulp.dest('bin/assets'));
 });
 

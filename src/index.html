@@ -15,9 +15,28 @@
     canvas {
       margin: 50px auto;
     }
+
+    @font-face {
+        font-family: 'ss';
+        src: url('assets/slkscr-webfont.eot');
+        src: url('assets/slkscr-webfont.eot?#iefix') format('embedded-opentype'),
+             url('assets/slkscr-webfont.woff') format('woff'),
+             url('assets/slkscr-webfont.ttf') format('truetype'),
+             url('assets/slkscr-webfont.svg#silkscreennormal') format('svg');
+        font-weight: normal;
+        font-style: normal;
+
+    }
+
+    h1 {
+      text-align: center;
+      font-family: 'ss', Arial;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
+  <h1>Aqua</h1>
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/phaser/2.0.3/phaser.min.js"></script>
   <script src="js/bundle.js"></script>
 </body>

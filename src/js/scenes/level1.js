@@ -19,8 +19,8 @@ module.exports = {
     var playerX = 8 * this.TILE_SIZE,
       playerY = 8 * this.TILE_SIZE;
 
-    //playerX = 28 * this.TILE_SIZE;
-    //playerY = 0;
+    playerX = 39 * this.TILE_SIZE;
+    playerY = 23 * this.TILE_SIZE;
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
