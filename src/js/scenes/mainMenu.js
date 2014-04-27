@@ -1,4 +1,4 @@
-/*globals module, require*/
+/*globals module, require, localStorage*/
 
 var Phaser = require('phaser'),
   game = require('../game');
@@ -36,13 +36,26 @@ module.exports = {
 
   addPointerEvents: function () {
     game.input.keyboard.addKeyCapture([
-      Phaser.Keyboard.ENTER
+      Phaser.Keyboard.ENTER,
+      Phaser.Keyboard.M
     ]);
   },
 
   update: function () {
+
+    var mute;
+
     if (game.input.keyboard.isDown(Phaser.Keyboard.ENTER)) {
       this.startGame();
+    }
+
+    if (game.input.keyboard.justPressed(Phaser.Keyboard.M, 1)) {
+      mute = localStorage.getItem("mute");
+      if (mute && mute === 'on') {
+        localStorage.setItem("mute", 'off');
+      } else {
+        localStorage.setItem("mute", 'on');
+      }
     }
   },
 

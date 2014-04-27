@@ -46,6 +46,9 @@ var game = require('../game'),
       if (mute === 'on') {
         this.muteSounds = true;
         this.setMute();
+      } else {
+        localStorage.setItem("mute", 'off');
+        this.muteSounds = false;
       }
     } else {
       localStorage.setItem("mute", 'off');
@@ -452,7 +455,7 @@ module.exports = {
 };
 
 },{"../classes/Audio":2,"../classes/Collectables":3,"../classes/Decorations":4,"../classes/Ground":5,"../classes/Input":6,"../classes/Logic":7,"../classes/Player":8,"../game":9}],12:[function(require,module,exports){
-/*globals module, require*/
+/*globals module, require, localStorage*/
 
 var Phaser = (window.Phaser),
   game = require('../game');
@@ -490,13 +493,26 @@ module.exports = {
 
   addPointerEvents: function () {
     game.input.keyboard.addKeyCapture([
-      Phaser.Keyboard.ENTER
+      Phaser.Keyboard.ENTER,
+      Phaser.Keyboard.M
     ]);
   },
 
   update: function () {
+
+    var mute;
+
     if (game.input.keyboard.isDown(Phaser.Keyboard.ENTER)) {
       this.startGame();
+    }
+
+    if (game.input.keyboard.justPressed(Phaser.Keyboard.M, 1)) {
+      mute = localStorage.getItem("mute");
+      if (mute && mute === 'on') {
+        localStorage.setItem("mute", 'off');
+      } else {
+        localStorage.setItem("mute", 'on');
+      }
     }
   },
 

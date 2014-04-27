@@ -19,6 +19,9 @@ var game = require('../game'),
       if (mute === 'on') {
         this.muteSounds = true;
         this.setMute();
+      } else {
+        localStorage.setItem("mute", 'off');
+        this.muteSounds = false;
       }
     } else {
       localStorage.setItem("mute", 'off');
