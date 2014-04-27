@@ -13,16 +13,30 @@ var game = require('./game'),
     boot = require('./scenes/boot.js'),
     preloader = require('./scenes/preloader'),
     mainMenu = require('./scenes/mainMenu'),
-    level1 = require('./scenes/level1');
+    level1 = require('./scenes/level1'),
+    win = require('./scenes/win');
 
 game.state.add('boot', boot, false);
 game.state.add('preloader', preloader, false);
 game.state.add('mainMenu', mainMenu, false);
 game.state.add('level1', level1, false);
+game.state.add('win', win, false);
 
 game.state.start('boot');
 
-},{"./game":8,"./scenes/boot.js":9,"./scenes/level1":10,"./scenes/mainMenu":11,"./scenes/preloader":12}],2:[function(require,module,exports){
+},{"./game":9,"./scenes/boot.js":10,"./scenes/level1":11,"./scenes/mainMenu":12,"./scenes/preloader":13,"./scenes/win":14}],2:[function(require,module,exports){
+var game = require('../game'),
+  Audio = function () {
+
+    this.sfx = game.add.audio('sfx');
+    this.sfx.addMarker('pickUpKey', 0, 1);
+    this.sfx.addMarker('unlockGate', 1, 8);
+    this.sfx.addMarker('endGame', 9, 14);
+  };
+
+module.exports = Audio;
+
+},{"../game":9}],3:[function(require,module,exports){
 var game = require('../game'),
     Collectables = function () {
       this.setup();
@@ -39,7 +53,7 @@ Collectables.prototype.setup = function () {
 
 module.exports = Collectables;
 
-},{"../game":8}],3:[function(require,module,exports){
+},{"../game":9}],4:[function(require,module,exports){
 var game = require('../game'),
   Decorations = function () {
     this.setup();
@@ -56,7 +70,7 @@ Decorations.prototype.setup = function () {
 
 module.exports = Decorations;
 
-},{"../game":8}],4:[function(require,module,exports){
+},{"../game":9}],5:[function(require,module,exports){
 var game = require('../game'),
   Ground = function () {
     this.setup();
@@ -78,7 +92,7 @@ Ground.prototype.setup = function () {
 
 module.exports = Ground;
 
-},{"../game":8}],5:[function(require,module,exports){
+},{"../game":9}],6:[function(require,module,exports){
 /*globals module, require*/
 
 var Phaser = (window.Phaser),
@@ -114,25 +128,40 @@ Input.prototype.justPressedUp = function () {
 
 module.exports = Input;
 
-},{"../game":8}],6:[function(require,module,exports){
+},{"../game":9}],7:[function(require,module,exports){
 var game = require('../game'),
   Logic = function () {
 
   this.currentLevel = 0;
 
   this.keys = [
-    { x: 14, y: 4, collected: false, opens: 0 },
-    { x: 25, y: 8, collected: false, opens: 1 },
-    { x: 22, y: 2, collected: false, opens: 1}
+    { x: 14, y:  4, collected: false, opens: 0 },
+    { x: 25, y:  8, collected: false, opens: 1 },
+    { x: 22, y:  2, collected: false, opens: 1 },
+    { x: 39, y:  2, collected: false, opens: 2 },
+    { x: 31, y: 20, collected: false, opens: 3 },
+    { x: 33, y:  7, collected: false, opens: 4 },
+    { x: 42, y: 20, collected: false, opens: 5 },
+    { x: 33, y:  0, collected: false, opens: 6 }
   ];
   
   this.gates = [
-    { x: 14, y: 8, open: 1 }, // 0
-    { x: 26, y: 2, open: 2 }  // 1
+    { x: 14, y:  8, open: 1 },  // 0
+    { x: 26, y:  2, open: 2 },  // 1
+    { x: 31, y: 18, open: 1 },  // 2
+    { x: 37, y:  7, open: 1 },  // 3
+    { x: 33, y: 18, open: 1 },  // 4
+    { x: 37, y:  4, open: 1 },  // 5
+    { x: 37, y: 23, open: 1 }
   ];
 };
 
 Logic.prototype.update = function (x, y) {
+
+  if (x === 47 && y === 96) {
+    game.state.start('win', true, false);
+    game.level.audio.sfx.play('endGame');
+  }
 
   for (var i = 0, iL = this.keys.length, key, gate; i < iL; i++) {
     key = this.keys[i];
@@ -142,8 +171,10 @@ Logic.prototype.update = function (x, y) {
         gate.open -= 1;
         key.collected = true;
         game.level.collectables.tilemap.removeTile(x, y, 1);
+        game.level.audio.sfx.play('pickUpKey');
         if (gate.open === 0) {
           game.level.ground.tilemap.removeTile(gate.x, gate.y, 0);
+          game.level.audio.sfx.play('unlockGate');
         }
       }
     }
@@ -153,7 +184,7 @@ Logic.prototype.update = function (x, y) {
 
 module.exports = Logic;
 
-},{"../game":8}],7:[function(require,module,exports){
+},{"../game":9}],8:[function(require,module,exports){
 var Phaser = (window.Phaser),
   game = require('../game'),
   Player = function (x, y) {
@@ -219,7 +250,7 @@ Player.prototype.midAir = function () {
 
 module.exports = Player;
 
-},{"../game":8}],8:[function(require,module,exports){
+},{"../game":9}],9:[function(require,module,exports){
 var Phaser = (window.Phaser),
   scale = 1.5;
 
@@ -227,7 +258,7 @@ var game = new Phaser.Game(480 * scale, 300 * scale, Phaser.AUTO, 'content', nul
 
 module.exports = game;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /*globals module*/
 
 var game = require('../game');
@@ -258,7 +289,7 @@ module.exports = {
 
 };
 
-},{"../game":8}],10:[function(require,module,exports){
+},{"../game":9}],11:[function(require,module,exports){
 /* globals module, require*/
 
 var Phaser = (window.Phaser),
@@ -268,7 +299,8 @@ var Phaser = (window.Phaser),
   Collectables = require('../classes/Collectables'),
   Decorations = require('../classes/Decorations'),
   Logic = require('../classes/Logic'),
-  Input = require('../classes/Input');
+  Input = require('../classes/Input'),
+  Audio = require('../classes/Audio');
 
 module.exports = {
 
@@ -278,6 +310,9 @@ module.exports = {
 
     var playerX = 8 * this.TILE_SIZE,
       playerY = 8 * this.TILE_SIZE;
+
+    //playerX = 28 * this.TILE_SIZE;
+    //playerY = 0;
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -292,6 +327,7 @@ module.exports = {
     this.player = new Player(playerX, playerY);
     this.input = new Input();
     this.logic = new Logic();
+    this.audio = new Audio();
 
     game.camera.follow(this.player.sprite);
     game.level = this;
@@ -350,7 +386,7 @@ module.exports = {
 
 };
 
-},{"../classes/Collectables":2,"../classes/Decorations":3,"../classes/Ground":4,"../classes/Input":5,"../classes/Logic":6,"../classes/Player":7,"../game":8}],11:[function(require,module,exports){
+},{"../classes/Audio":2,"../classes/Collectables":3,"../classes/Decorations":4,"../classes/Ground":5,"../classes/Input":6,"../classes/Logic":7,"../classes/Player":8,"../game":9}],12:[function(require,module,exports){
 /*globals module, require*/
 
 var Phaser = (window.Phaser),
@@ -382,7 +418,7 @@ module.exports = {
 
 };
 
-},{"../game":8}],12:[function(require,module,exports){
+},{"../game":9}],13:[function(require,module,exports){
 /*globals module, require*/
 
 var Phaser = (window.Phaser),
@@ -407,6 +443,11 @@ module.exports = {
 
     game.load.spritesheet('player', 'assets/player_sprite.png', 64, 64);
 
+    game.load.audio('sfx', [
+      'assets/sfx.m4a',
+      'assets/sfx.ogg'
+    ]);
+
   },
 
   create: function () {
@@ -421,4 +462,32 @@ module.exports = {
 
 };
 
-},{"../game":8}]},{},[1])
+},{"../game":9}],14:[function(require,module,exports){
+var Phaser = (window.Phaser),
+  game = require('../game');
+
+module.exports = {
+
+  create: function () {
+
+    var tween;
+
+    this.background = this.add.tileSprite(0, 0, game.width, game.height, 'background');
+    this.background.alpha = 0;
+
+    tween = this.add.tween(this.background)
+      .to({ alpha: 1 }, 500, Phaser.Easing.Linear.None, true);
+
+    tween.onComplete.add(this.addPointerEvents, this);
+  },
+
+  addPointerEvents: function () {
+    this.input.onDown.addOnce(this.goToMenu, this);
+  },
+
+  goToMenu: function () {
+    game.state.start('mainMenu', true, false);
+  }
+};
+
+},{"../game":9}]},{},[1])

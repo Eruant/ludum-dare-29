@@ -7,7 +7,8 @@ var Phaser = require('phaser'),
   Collectables = require('../classes/Collectables'),
   Decorations = require('../classes/Decorations'),
   Logic = require('../classes/Logic'),
-  Input = require('../classes/Input');
+  Input = require('../classes/Input'),
+  Audio = require('../classes/Audio');
 
 module.exports = {
 
@@ -17,6 +18,9 @@ module.exports = {
 
     var playerX = 8 * this.TILE_SIZE,
       playerY = 8 * this.TILE_SIZE;
+
+    //playerX = 28 * this.TILE_SIZE;
+    //playerY = 0;
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -31,6 +35,7 @@ module.exports = {
     this.player = new Player(playerX, playerY);
     this.input = new Input();
     this.logic = new Logic();
+    this.audio = new Audio();
 
     game.camera.follow(this.player.sprite);
     game.level = this;

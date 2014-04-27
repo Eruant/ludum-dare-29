@@ -22,6 +22,11 @@ module.exports = {
 
     game.load.spritesheet('player', 'assets/player_sprite.png', 64, 64);
 
+    game.load.audio('sfx', [
+      'assets/sfx.m4a',
+      'assets/sfx.ogg'
+    ]);
+
   },
 
   create: function () {

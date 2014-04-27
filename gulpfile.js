@@ -39,7 +39,13 @@ gulp.task('markup', function () {
 });
 
 gulp.task('assets', function () {
-  return gulp.src(['src/assets/*.png', 'src/assets/*jpg', 'src/assets/*.json'])
+  return gulp.src([
+    'src/assets/*.png',
+    'src/assets/*jpg',
+    'src/assets/*.json',
+    'src/assets/*.m4a',
+    'src/assets/*.ogg'
+  ])
     .pipe(imagemin())
     .pipe(gulp.dest('bin/assets'));
 });
