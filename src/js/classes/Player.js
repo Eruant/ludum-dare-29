@@ -18,8 +18,9 @@ var Phaser = require('phaser'),
     this.sprite.body.maxVelocity.setTo(this.MAX_SPEED, this.MAX_SPEED);
     this.sprite.body.drag.setTo(this.DRAG, 0);
 
-    this.sprite.anchor.setTo(0.5, -0.2);
-    this.sprite.body.offset.setTo(32, 0);
+    this.sprite.body.setSize(46, 48);
+    this.sprite.anchor.setTo(0.5, 0);
+    this.sprite.body.offset.setTo(2, 7);
 
     this.sprite.animations.add('stand', [0, 1], 2.5, true);
     this.sprite.animations.add('walk', [2, 3, 4, 5], 10, true);

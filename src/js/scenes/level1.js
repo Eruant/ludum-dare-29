@@ -4,6 +4,9 @@ var Phaser = require('phaser'),
   game = require('../game'),
   Player = require('../classes/Player'),
   Ground = require('../classes/Ground'),
+  Collectables = require('../classes/Collectables'),
+  Decorations = require('../classes/Decorations'),
+  Logic = require('../classes/Logic'),
   Input = require('../classes/Input');
 
 module.exports = {
@@ -20,13 +23,21 @@ module.exports = {
     this.bubbles.fixedToCamera = true;
 
     this.ground = new Ground();
-    this.player = new Player(3 * this.TILE_SIZE, 6 * this.TILE_SIZE);
+    this.collectables = new Collectables();
+    this.decorations = new Decorations();
+    this.player = new Player(8 * this.TILE_SIZE, 8 * this.TILE_SIZE);
     this.input = new Input();
+    this.logic = new Logic();
 
     game.camera.follow(this.player.sprite);
+    game.level = this;
   },
 
   update: function () {
+
+    var playerPosition = this.player.sprite.position,
+      xTile = Math.floor(playerPosition.x / 64),
+      yTile = Math.floor(playerPosition.y / 64);
 
     this.background.tilePosition.setTo(-(game.camera.x * 0.5), -(game.camera.y * 0.5));
     this.bubbles.tilePosition.setTo(-(game.camera.x * 0.75), -(game.camera.y * 0.75));
@@ -61,6 +72,12 @@ module.exports = {
     if (!this.input.up()) {
       this.player.canVariableJump = false;
     }
+
+    this.logic.update(xTile, yTile);
+  },
+
+  render: function () {
+    //game.debug.body(this.player.sprite);
   },
 
   restartGame: function () {

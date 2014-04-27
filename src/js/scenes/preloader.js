@@ -16,6 +16,8 @@ module.exports = {
     game.load.image('bubbles', 'assets/bubbles.png');
 
     game.load.spritesheet('ground_tiles', 'assets/ground_sprite.png', 64, 64);
+    game.load.spritesheet('decorations', 'assets/decorations.png', 64, 64);
+    game.load.spritesheet('collectables', 'assets/collectables.png', 64, 64);
     game.load.tilemap('ground_map', 'assets/ground_tiles.json', null, Phaser.Tilemap.TILED_JSON);
 
     game.load.spritesheet('player', 'assets/player_sprite.png', 64, 64);

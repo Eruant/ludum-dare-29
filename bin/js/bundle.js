@@ -22,12 +22,44 @@ game.state.add('level1', level1, false);
 
 game.state.start('boot');
 
-},{"./game":5,"./scenes/boot.js":6,"./scenes/level1":7,"./scenes/mainMenu":8,"./scenes/preloader":9}],2:[function(require,module,exports){
-var /*Phaser = require('phaser'),*/
-  game = require('../game'),
+},{"./game":8,"./scenes/boot.js":9,"./scenes/level1":10,"./scenes/mainMenu":11,"./scenes/preloader":12}],2:[function(require,module,exports){
+var game = require('../game'),
+    Collectables = function () {
+      this.setup();
+
+      return this;
+    };
+
+Collectables.prototype.setup = function () {
+  this.tilemap = game.add.tilemap('ground_map');
+  this.tilemap.addTilesetImage('collectables', 'collectables');
+
+  this.layer = this.tilemap.createLayer(1);
+};
+
+module.exports = Collectables;
+
+},{"../game":8}],3:[function(require,module,exports){
+var game = require('../game'),
+  Decorations = function () {
+    this.setup();
+
+    return this;
+  };
+
+Decorations.prototype.setup = function () {
+  this.tilemap = game.add.tilemap('ground_map');
+  this.tilemap.addTilesetImage('decorations', 'decorations');
+
+  this.layer = this.tilemap.createLayer(2);
+};
+
+module.exports = Decorations;
+
+},{"../game":8}],4:[function(require,module,exports){
+var game = require('../game'),
   Ground = function () {
     this.setup();
-    this.addBlocks();
 
     return this;
   };
@@ -36,17 +68,17 @@ Ground.prototype.setup = function () {
   this.tilemap = game.add.tilemap('ground_map');
   this.tilemap.addTilesetImage('ground', 'ground_tiles');
 
-  this.tilemap.setCollisionBetween(1, 15);
-};
+  this.tilemap.setCollisionBetween(0, 16);
 
-Ground.prototype.addBlocks = function () {
   this.layer = this.tilemap.createLayer(0);
   this.layer.resizeWorld();
+
+  //this.layer.debug = true;
 };
 
 module.exports = Ground;
 
-},{"../game":5}],3:[function(require,module,exports){
+},{"../game":8}],5:[function(require,module,exports){
 /*globals module, require*/
 
 var Phaser = (window.Phaser),
@@ -82,7 +114,46 @@ Input.prototype.justPressedUp = function () {
 
 module.exports = Input;
 
-},{"../game":5}],4:[function(require,module,exports){
+},{"../game":8}],6:[function(require,module,exports){
+var game = require('../game'),
+  Logic = function () {
+
+  this.currentLevel = 0;
+
+  this.keys = [
+    { x: 14, y: 4, collected: false, opens: 0 },
+    { x: 25, y: 8, collected: false, opens: 1 },
+    { x: 22, y: 2, collected: false, opens: 1}
+  ];
+  
+  this.gates = [
+    { x: 14, y: 8, open: 1 }, // 0
+    { x: 26, y: 2, open: 2 }  // 1
+  ];
+};
+
+Logic.prototype.update = function (x, y) {
+
+  for (var i = 0, iL = this.keys.length, key, gate; i < iL; i++) {
+    key = this.keys[i];
+    gate = this.gates[key.opens];
+    if (!key.collected) {
+      if (x === key.x && y === key.y) {
+        gate.open -= 1;
+        key.collected = true;
+        game.level.collectables.tilemap.removeTile(x, y, 1);
+        if (gate.open === 0) {
+          game.level.ground.tilemap.removeTile(gate.x, gate.y, 0);
+        }
+      }
+    }
+  }
+
+};
+
+module.exports = Logic;
+
+},{"../game":8}],7:[function(require,module,exports){
 var Phaser = (window.Phaser),
   game = require('../game'),
   Player = function (x, y) {
@@ -103,8 +174,9 @@ var Phaser = (window.Phaser),
     this.sprite.body.maxVelocity.setTo(this.MAX_SPEED, this.MAX_SPEED);
     this.sprite.body.drag.setTo(this.DRAG, 0);
 
-    this.sprite.anchor.setTo(0.5, -0.2);
-    this.sprite.body.offset.setTo(32, 0);
+    this.sprite.body.setSize(46, 48);
+    this.sprite.anchor.setTo(0.5, 0);
+    this.sprite.body.offset.setTo(2, 7);
 
     this.sprite.animations.add('stand', [0, 1], 2.5, true);
     this.sprite.animations.add('walk', [2, 3, 4, 5], 10, true);
@@ -147,7 +219,7 @@ Player.prototype.midAir = function () {
 
 module.exports = Player;
 
-},{"../game":5}],5:[function(require,module,exports){
+},{"../game":8}],8:[function(require,module,exports){
 var Phaser = (window.Phaser),
   scale = 1.5;
 
@@ -155,7 +227,7 @@ var game = new Phaser.Game(480 * scale, 300 * scale, Phaser.AUTO, 'content', nul
 
 module.exports = game;
 
-},{}],6:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /*globals module*/
 
 var game = require('../game');
@@ -186,13 +258,16 @@ module.exports = {
 
 };
 
-},{"../game":5}],7:[function(require,module,exports){
+},{"../game":8}],10:[function(require,module,exports){
 /* globals module, require*/
 
 var Phaser = (window.Phaser),
   game = require('../game'),
   Player = require('../classes/Player'),
   Ground = require('../classes/Ground'),
+  Collectables = require('../classes/Collectables'),
+  Decorations = require('../classes/Decorations'),
+  Logic = require('../classes/Logic'),
   Input = require('../classes/Input');
 
 module.exports = {
@@ -209,13 +284,21 @@ module.exports = {
     this.bubbles.fixedToCamera = true;
 
     this.ground = new Ground();
-    this.player = new Player(3 * this.TILE_SIZE, 6 * this.TILE_SIZE);
+    this.collectables = new Collectables();
+    this.decorations = new Decorations();
+    this.player = new Player(8 * this.TILE_SIZE, 8 * this.TILE_SIZE);
     this.input = new Input();
+    this.logic = new Logic();
 
     game.camera.follow(this.player.sprite);
+    game.level = this;
   },
 
   update: function () {
+
+    var playerPosition = this.player.sprite.position,
+      xTile = Math.floor(playerPosition.x / 64),
+      yTile = Math.floor(playerPosition.y / 64);
 
     this.background.tilePosition.setTo(-(game.camera.x * 0.5), -(game.camera.y * 0.5));
     this.bubbles.tilePosition.setTo(-(game.camera.x * 0.75), -(game.camera.y * 0.75));
@@ -250,6 +333,12 @@ module.exports = {
     if (!this.input.up()) {
       this.player.canVariableJump = false;
     }
+
+    this.logic.update(xTile, yTile);
+  },
+
+  render: function () {
+    //game.debug.body(this.player.sprite);
   },
 
   restartGame: function () {
@@ -258,7 +347,7 @@ module.exports = {
 
 };
 
-},{"../classes/Ground":2,"../classes/Input":3,"../classes/Player":4,"../game":5}],8:[function(require,module,exports){
+},{"../classes/Collectables":2,"../classes/Decorations":3,"../classes/Ground":4,"../classes/Input":5,"../classes/Logic":6,"../classes/Player":7,"../game":8}],11:[function(require,module,exports){
 /*globals module, require*/
 
 var Phaser = (window.Phaser),
@@ -290,7 +379,7 @@ module.exports = {
 
 };
 
-},{"../game":5}],9:[function(require,module,exports){
+},{"../game":8}],12:[function(require,module,exports){
 /*globals module, require*/
 
 var Phaser = (window.Phaser),
@@ -309,6 +398,8 @@ module.exports = {
     game.load.image('bubbles', 'assets/bubbles.png');
 
     game.load.spritesheet('ground_tiles', 'assets/ground_sprite.png', 64, 64);
+    game.load.spritesheet('decorations', 'assets/decorations.png', 64, 64);
+    game.load.spritesheet('collectables', 'assets/collectables.png', 64, 64);
     game.load.tilemap('ground_map', 'assets/ground_tiles.json', null, Phaser.Tilemap.TILED_JSON);
 
     game.load.spritesheet('player', 'assets/player_sprite.png', 64, 64);
@@ -327,4 +418,4 @@ module.exports = {
 
 };
 
-},{"../game":5}]},{},[1])
+},{"../game":8}]},{},[1])
