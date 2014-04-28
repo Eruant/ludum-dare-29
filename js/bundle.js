@@ -345,7 +345,7 @@ module.exports = {
     this.input.maxPointers = 1;
 
     // auto pause if window looses focus
-    this.stage.disableVisibilityChange = true;
+    this.stage.disableVisibilityChange = false;
 
     if (game.device.desktop) {
       this.stage.scale.pageAlignHorizontally = true;
@@ -395,6 +395,7 @@ module.exports = {
 
     game.camera.follow(this.player.sprite);
     game.level = this;
+
   },
 
   update: function () {
