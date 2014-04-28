@@ -36,6 +36,7 @@ module.exports = {
 
     game.camera.follow(this.player.sprite);
     game.level = this;
+
   },
 
   update: function () {
